@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { toast } from "@/hooks/use-toast";
+import { custoExtras, extrasDoPedido, formatCurrency } from "@/lib/catalog";
 
 const hoje = new Date();
 const isDomingo = hoje.getDay() === 0;
@@ -31,6 +32,13 @@ const tamanhos = [
     precoOriginal: 15,
     precoPromocional: null,
     imagemSrc: "/copo-grande.png",
+  },
+  {
+    id: "500ml",
+    tamanho: "500ml",
+    precoOriginal: 25,
+    precoPromocional: null,
+    imagemSrc: "/copo-500ml.png",
   },
 ];
 
@@ -86,6 +94,10 @@ const complementos = [
     imagemSrc: "/complementos/banana.png",
   },
   {
+    nome: "Farinha Láctea",
+    imagemSrc: "/complementos/farinha-lactea.png",
+  },
+  {
     nome: "Amendoim",
     imagemSrc: "/complementos/amendoim.png",
   },
@@ -135,10 +147,6 @@ function parseCurrency(value: string): number {
   const parsed = Number(normalized);
 
   return Number.isFinite(parsed) ? parsed : 0;
-}
-
-function formatCurrency(value: number) {
-  return `R$ ${value.toFixed(2).replace(".", ",")}`;
 }
 
 export default function AcaiPedido() {
@@ -238,12 +246,10 @@ export default function AcaiPedido() {
       ? tamanho.precoPromocional!
       : tamanho.precoOriginal;
 
-    const quantidadeExtras = Math.max(0, acai.complementos.length - 3);
-
     const novoItem: AcaiItem = {
       id: `${Date.now()}-${Math.random()}`,
       ...acai,
-      preco: precoBase + quantidadeExtras,
+      preco: precoBase + custoExtras(acai.complementos),
     };
 
     setCart((prev) => [...prev, novoItem]);
@@ -360,7 +366,7 @@ export default function AcaiPedido() {
     mensagem += `*Cliente:* ${nomeCliente.trim()}\n\n`;
 
     cart.forEach((item, index) => {
-      const qtdExtras = Math.max(0, item.complementos.length - 3);
+      const extras = extrasDoPedido(item.complementos);
 
       mensagem += `*Açaí ${index + 1}*\n`;
       mensagem += `- *Tamanho:* ${item.tamanhoLabel} — ${formatCurrency(
@@ -371,10 +377,10 @@ export default function AcaiPedido() {
         item.complementos.length > 0 ? item.complementos.join(", ") : "Nenhum"
       }\n`;
 
-      if (qtdExtras > 0) {
-        mensagem += `  _(Inclui ${qtdExtras} ${
-          qtdExtras === 1 ? "complemento extra" : "complementos extras"
-        } de R$ 1,00 cada)_\n`;
+      if (extras.length > 0) {
+        mensagem += `  _Extras: ${extras
+          .map((extra) => `${extra.nome} ${formatCurrency(extra.preco)}`)
+          .join(", ")}_\n`;
       }
 
       if (item.observacao.trim()) {
