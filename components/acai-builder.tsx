@@ -9,6 +9,13 @@ import { CremeCard } from "@/components/creme-card";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  custoExtras,
+  extrasDoPedido,
+  formatCurrency,
+  INCLUSOS,
+  precoExtraDe,
+} from "@/lib/catalog";
 
 interface Tamanho {
   id: string;
@@ -56,7 +63,7 @@ function StepHeader({
       </div>
 
       {hint ? (
-        <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-relaxed text-white/70">
+        <p className="mt-2 max-w-[40rem] text-[0.95rem] leading-relaxed text-white/70">
           {hint}
         </p>
       ) : null}
@@ -80,15 +87,15 @@ export function AcaiBuilder({
 
   const [observacao, setObservacao] = useState("");
 
-  const quantidadeExtras = Math.max(0, complementosSelecionados.length - 3);
+  const extras = extrasDoPedido(complementosSelecionados);
 
-  const custoExtras = quantidadeExtras;
+  const valorExtras = custoExtras(complementosSelecionados);
 
   const tamanhoObj = tamanhos.find((item) => item.id === tamanhoSelecionado);
 
   const precoTamanho = tamanhoObj?.preco ?? 0;
 
-  const precoTotalItem = precoTamanho + custoExtras;
+  const precoTotalItem = precoTamanho + valorExtras;
 
   const handleComplementoToggle = (complemento: string) => {
     setComplementosSelecionados((prev) => {
@@ -128,7 +135,7 @@ export function AcaiBuilder({
       <section className="step-section">
         <StepHeader title="Escolha o tamanho:" />
 
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
+        <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
           {tamanhos.map((tamanho) => {
             const temPromocao =
               tamanho.precoPromocional !== null &&
@@ -176,7 +183,7 @@ export function AcaiBuilder({
       <section className="step-section">
         <StepHeader
           title="Escolha os complementos:"
-          hint="Os 3 primeiros entram no preço. Do quarto em diante, cada um custa R$ 1,00 a mais."
+          hint="Os 3 primeiros entram no preço. Do quarto em diante, cobra o valor extra de cada um."
           extra={
             <span className="shrink-0 pt-0.5 text-sm font-semibold text-white/70">
               {complementosSelecionados.length}{" "}
@@ -187,11 +194,13 @@ export function AcaiBuilder({
           }
         />
 
-        {quantidadeExtras > 0 && (
-          <p className="mb-5 text-sm font-semibold text-brand-green">
-            {quantidadeExtras}{" "}
-            {quantidadeExtras === 1 ? "extra" : "extras"}: + R${" "}
-            {custoExtras.toFixed(2).replace(".", ",")}
+        {extras.length > 0 && (
+          <p className="mb-5 text-sm font-semibold leading-relaxed text-brand-green">
+            {extras.length} {extras.length === 1 ? "extra" : "extras"}:{" "}
+            {extras
+              .map((extra) => `${extra.nome} ${formatCurrency(extra.preco)}`)
+              .join(" · ")}{" "}
+            = {formatCurrency(valorExtras)}
           </p>
         )}
 
@@ -203,10 +212,12 @@ export function AcaiBuilder({
 
             const selecionado = selectedIndex !== -1;
 
-            const extraSelecionado = selecionado && selectedIndex >= 3;
+            const extraSelecionado = selecionado && selectedIndex >= INCLUSOS;
 
             const seraExtra =
-              !selecionado && complementosSelecionados.length >= 3;
+              !selecionado && complementosSelecionados.length >= INCLUSOS;
+
+            const precoExtra = precoExtraDe(complemento.nome);
 
             return (
               <ComplementoCard
@@ -215,7 +226,11 @@ export function AcaiBuilder({
                 imagemSrc={complemento.imagemSrc}
                 selecionado={selecionado}
                 desabilitado={false}
-                badge={extraSelecionado || seraExtra ? "+ R$ 1" : undefined}
+                badge={
+                  extraSelecionado || seraExtra
+                    ? `+ ${formatCurrency(precoExtra)}`
+                    : undefined
+                }
                 onClick={() => handleComplementoToggle(complemento.nome)}
               />
             );
@@ -257,7 +272,7 @@ export function AcaiBuilder({
 
             {tamanhoSelecionado && (
               <span className="font-extrabold">
-                R$ {precoTotalItem.toFixed(2).replace(".", ",")}
+                {formatCurrency(precoTotalItem)}
               </span>
             )}
           </span>

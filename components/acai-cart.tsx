@@ -3,6 +3,7 @@
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { extrasDoPedido, formatCurrency } from "@/lib/catalog";
 
 interface AcaiItem {
   id: string;
@@ -41,7 +42,7 @@ export function AcaiCart({ items, onRemove }: AcaiCartProps) {
 
       <div className="space-y-4">
         {items.map((item, index) => {
-          const extras = Math.max(0, item.complementos.length - 3);
+          const extras = extrasDoPedido(item.complementos);
 
           return (
             <article
@@ -55,7 +56,7 @@ export function AcaiCart({ items, onRemove }: AcaiCartProps) {
                     {item.tamanhoLabel.replace("ml", " ML")}
                   </h3>
                   <p className="mt-1 text-base font-extrabold text-brand-green">
-                    R$ {item.preco.toFixed(2).replace(".", ",")}
+                    {formatCurrency(item.preco)}
                   </p>
                 </div>
 
@@ -80,8 +81,13 @@ export function AcaiCart({ items, onRemove }: AcaiCartProps) {
               {item.complementos.length > 0 && (
                 <p className="mt-2 text-sm leading-relaxed text-white/70">
                   {item.complementos.join(", ")}
-                  {extras > 0
-                    ? ` · ${extras} ${extras === 1 ? "extra" : "extras"}`
+                  {extras.length > 0
+                    ? ` · extras: ${extras
+                        .map(
+                          (extra) =>
+                            `${extra.nome} ${formatCurrency(extra.preco)}`,
+                        )
+                        .join(", ")}`
                     : ""}
                 </p>
               )}
@@ -107,7 +113,7 @@ export function AcaiCart({ items, onRemove }: AcaiCartProps) {
         </div>
 
         <strong className="text-2xl font-extrabold text-brand-green sm:text-3xl">
-          R$ {total.toFixed(2).replace(".", ",")}
+          {formatCurrency(total)}
         </strong>
       </div>
     </section>

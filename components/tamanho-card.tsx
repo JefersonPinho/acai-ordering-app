@@ -30,7 +30,7 @@ export function TamanhoCard({
       aria-pressed={selecionado}
       onClick={onClick}
       className={cn(
-        "relative flex min-h-[220px] flex-col items-center rounded-3xl border-2 px-3 pb-5 pt-6 text-center transition-colors sm:min-h-[250px] sm:px-4",
+        "relative flex min-h-[190px] flex-col items-center rounded-3xl border-2 px-2 pb-4 pt-5 text-center transition-colors sm:min-h-[250px] sm:px-4 sm:pb-5 sm:pt-6",
         selecionado
           ? "border-brand-green bg-brand-green/10"
           : "border-white/15 bg-white/[0.04]",
@@ -48,17 +48,17 @@ export function TamanhoCard({
         </span>
       )}
 
-      <div className="relative h-[120px] w-full sm:h-[148px]">
+      <div className="relative h-[96px] w-full sm:h-[148px]">
         <Image
           src={imagemSrc}
           alt={`Açaí ${tamanho}`}
           fill
-          sizes="(max-width: 640px) 50vw, 500px"
+          sizes="(max-width: 640px) 33vw, 500px"
           className="object-contain"
         />
       </div>
 
-      <strong className="mt-4 text-lg font-extrabold uppercase tracking-wide text-white">
+      <strong className="mt-3 text-sm font-extrabold uppercase tracking-wide text-white sm:mt-4 sm:text-lg">
         {tamanho.replace("ml", " ML")}
       </strong>
 
@@ -68,7 +68,7 @@ export function TamanhoCard({
         </span>
       )}
 
-      <span className="mt-1 text-lg font-extrabold text-brand-green">
+      <span className="mt-1 text-base font-extrabold text-brand-green sm:text-lg">
         R$ {preco.toFixed(2).replace(".", ",")}
       </span>
     </button>
